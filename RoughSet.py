@@ -40,6 +40,7 @@ class RoughSet:
 
 
     def importance(self, subset, by):
+        res = [0] * len(self.arr[0])
         divBy = self.div(by)
         print("by: " + str(by))
         print("divBy: " + str(divBy))
@@ -61,6 +62,8 @@ class RoughSet:
             print("pos_" + nameOfNewSubset + "(By) = " + str(self.pos(by, newSubset)))
             print("gamma_" + nameOfNewSubset + "(By) = " + str(self.gamma(by, newSubset)))
             print("gamma_(Subset)(By) - gamma_" + nameOfNewSubset + "(By) = " + str(self.gamma(by, subset) - self.gamma(by, newSubset)))
+            res[i] = self.gamma(by, subset) - self.gamma(by, newSubset)
             print()
         print()
+        return res
 

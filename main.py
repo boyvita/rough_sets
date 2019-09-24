@@ -54,9 +54,9 @@ with io.open("test.csv", "r", encoding='utf_8_sig') as fp:
     waysLen = len(ways)
 
 
-    featuresMethods = np.array(preData[1:1 + len(features), 1:1 + len(methods)], dtype="int")
-    featuresPersons = np.array(preData[1:1 + len(features), 2 + len(methods):2 + len(methods) + len(persons)], dtype="int")
-    waysMethods = np.array(preData[2 + len(features): 2 + len(features) + len(ways), 1:1 + len(methods)], dtype="int")
+    featuresMethods = np.array(preData[1:1 + len(features), 1:1 + len(methods)])
+    featuresPersons = np.array(preData[1:1 + len(features), 2 + len(methods):2 + len(methods) + len(persons)])
+    waysMethods = np.array(preData[2 + len(features): 2 + len(features) + len(ways), 1:1 + len(methods)])
     print("\npersons: " + str(persons))
     print("\nfeatures: " + str(features))
     print("\nmethods: " + str(methods))
@@ -65,33 +65,78 @@ with io.open("test.csv", "r", encoding='utf_8_sig') as fp:
     print("\nfeaturesPersons: \n" + str(featuresPersons))
     print("\nwaysMethods: \n" + str(waysMethods))
 
+    for i in range(len(ways)):
+        for j in range(len(methods)):
+            waysMethods[i][j] = "1" if int(waysMethods[i][j]) <= 2 else "2"
+
+    # situations = []
+    # featuresSituations = np.empty((8, 25), dtype=object)
+    # for methodNum in range(len(methods)):
+    #     for personNum in range(len(persons)):
+    #         situations.append(methods[methodNum] + " - " + persons[personNum])
+    #         for featureNum in range(len(features)):
+    #             print(str(featuresMethods[featureNum][methodNum]) + str(featuresPersons[featureNum][personNum]))
+    #             featuresSituations[featureNum][methodNum * len(persons) + personNum] = str(featuresMethods[featureNum][methodNum]) + str(featuresPersons[featureNum][personNum])
+    # print(situations)
+    # print(featuresSituations)
+
     situations = []
-    situationsMethods = np.empty((8, 5), dtype="int")
+    situationsMethods = np.empty((8, 5), dtype=object)
     num = 0
     for i in range(0, 2):
         for j in range(2, 4):
             for k in range(4, 6):
                 situations.append(ways[i] + "/" + ways[j] + "/" + ways[k])
                 for methodNum in range(len(methods)):
-                    situationsMethods[num][methodNum] = ((waysMethods[i][methodNum] - 1) * 4 + waysMethods[j][methodNum] - 1) * 4 + waysMethods[k][methodNum] - 1
+                    situationsMethods[num][methodNum] = waysMethods[i][methodNum] + waysMethods[j][methodNum] + waysMethods[k][methodNum]
                 num += 1
 
+    print(situations)
     print(situationsMethods)
 
-    objects = []
-    objectsFeatures = np.empty((40, 8), dtype="int")
-    objectNum = 0
-    for methodNum in range(len(methods)):
-        for situationNum in range(len(situations)):
-            objects.append(methods[methodNum] + " - " + situations[situationNum])
-            for featureNum in range(len(features)):
-                objectsFeatures[objectNum][featureNum] = (situationsMethods[situationNum][methodNum]) * 4 + featuresMethods[featureNum][methodNum] - 1
-            objectNum += 1
-    print(objectsFeatures)
 
-    roughSetObjectsFeatures = RoughSet(objectsFeatures)
+    attributes = []
+    featuresAttributes = np.empty((len(features), len(situations) + len(persons)), dtype=object)
+    methodNum = 4
+    for situationNum in range(len(situations)):
+        attributes.append(str(methods[methodNum]) + " - " + str(situations[situationNum]))
+        for featureNum in range(len(features)):
+            featuresAttributes[featureNum][situationNum] = featuresMethods[featureNum][methodNum] + situationsMethods[situationNum][methodNum]
+    for personNum in range(len(persons)):
+        attributes.append(persons[personNum])
+        for featureNum in range(len(features)):
+            featuresAttributes[featureNum][len(situations) + personNum] = featuresPersons[featureNum][personNum]
+    print(attributes)
+    print(featuresAttributes)
 
-    roughSetObjectsFeatures.importance([i for i in range(8)], [i for i in range(8)])
+
+
+    rs = RoughSet(featuresAttributes)
+    #
+    # print([i for i in range(8)])
+    # imp = rs.importance([i for i in range(len(situations), len(situations) + len(persons))], [i for i in range(0, len(situations))])
+    # for i in range(8):
+    #     print(str(i) + " - " + attributes[i] + ': ' + str(imp[i]))
+
+    for i in range(8):
+        imp = rs.importance([i], [i for i in range(len(situations), len(situations) + len(persons))])
+        # for i in range(8):
+        #     print(str(i) + " - " + attributes[i] + ': ' + str(imp[i]))
+
+    # objects = []
+    # objectsFeatures = np.empty((40, 8), dtype="int")
+    # objectNum = 0
+    # for methodNum in range(len(methods)):
+    #     for situationNum in range(len(situations)):
+    #         objects.append(methods[methodNum] + " - " + situations[situationNum])
+    #         for featureNum in range(len(features)):
+    #             objectsFeatures[objectNum][featureNum] = (situationsMethods[situationNum][methodNum]) * 4 + featuresMethods[featureNum][methodNum] - 1
+    #         objectNum += 1
+    # print(objectsFeatures)
+    #
+    # roughSetObjectsFeatures = RoughSet(objectsFeatures)
+    #
+    # roughSetObjectsFeatures.importance([i for i in range(8)], [i for i in range(8)])
 
 
 
